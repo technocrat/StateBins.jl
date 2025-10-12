@@ -141,7 +141,7 @@ statebins_plots(unemployment,
 
 - Julia ≥ 1.9
 - DataFrames.jl ≥ 1.6
-- Colors.jl ≥ 0.12  
+- Colors.jl ≥ 0.13  
 - ColorSchemes.jl ≥ 3.24
 - Plots.jl (for `statebins_plots`)
 - A Makie.jl backend (CairoMakie, GLMakie, or WGLMakie for `statebins_makie`)
