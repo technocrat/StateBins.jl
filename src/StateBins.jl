@@ -1,8 +1,22 @@
+"""
+    StateBins
+
+A Julia package for creating statebins (state binned choropleth maps).
+Provides backend via package extension:
+
+- `Makie.jl`: `using CairoMakie; statebins(...)`
+"""
 module StateBins
 
 using DataFrames, Colors, ColorSchemes
 
 # State coordinate data
+"""
+    STATE_COORDS
+
+DataFrame containing the grid coordinates for US states and territories.
+Columns: `abbrev`, `state`, `col`, `row`.
+"""
 const STATE_COORDS = DataFrame(
     abbrev=["AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DC", "DE", "FL", "GA", "HI",
         "ID", "IL", "IN", "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN",
@@ -27,26 +41,26 @@ const STATE_COORDS = DataFrame(
         5, 2, 4, 8, 7, 3]
 )
 
-function calculate_marker_size(font_size::Int, margin_factor::Float64, backend::Symbol)
-    if backend == :plots
-        text_width = 2 * 0.6 * font_size
-        text_height = font_size
-        required_width = text_width * (1 + 2 * margin_factor)
-        required_height = text_height * (1 + 2 * margin_factor)
-        result = max(20, max(required_width, required_height))
-    elseif backend == :makie
-        text_width = 2 * 0.7 * font_size
-        text_height = font_size
-        required_width = text_width * (1 + 2 * margin_factor)
-        required_height = text_height * (1 + 2 * margin_factor)
-        result = max(30, max(required_width, required_height))
-    else
-        result = 25
-    end
+"""
+    calculate_marker_size(font_size, margin_factor, backend)
 
+Internal helper to calculate the appropriate marker size based on font size and backend.
+"""
+function calculate_marker_size(font_size::Int, margin_factor::Float64, backend::Symbol)
+    text_width = 2 * 0.7 * font_size
+    text_height = font_size
+    required_width = text_width * (1 + 2 * margin_factor)
+    required_height = text_height * (1 + 2 * margin_factor)
+    result = max(30, max(required_width, required_height))
     return result
 end
 
+"""
+    should_use_light_text(color)
+
+Internal helper to determine if text on top of `color` should be light (white) or dark (black)
+based on WCAG relative luminance.
+"""
 function should_use_light_text(color)
     try
         if isa(color, Colors.Colorant)
@@ -70,25 +84,29 @@ function should_use_light_text(color)
 end
 
 """
-    statebins_plots(data::DataFrame; kwargs...)
-
-Create a statebins plot using the Plots.jl backend.
-Requires `using Plots` to be loaded.
-"""
-function statebins_plots(args...; kwargs...)
-    error("The Plots backend is not loaded. Please run `using Plots` to enable this functionality.")
-end
-
-"""
-    statebins_makie(data::DataFrame; kwargs...)
+    statebins(data::DataFrame; kwargs...)
 
 Create a statebins plot using a Makie.jl backend.
 Requires a Makie backend (e.g., `using CairoMakie`) to be loaded.
+
+# Example
+```julia
+using StateBins, CairoMakie, CSV, DataFrames
+
+# Assuming you have a CSV file with state and value columns
+df = CSV.read("database/votes.csv", DataFrame)
+
+statebins(df, 
+    state_col="state", 
+    value_col="margin", 
+    title="Election Results",
+    colorscheme=:RdBu)
+```
 """
-function statebins_makie(args...; kwargs...)
+function statebins(args...; kwargs...)
     error("The Makie backend is not loaded. Please run `using CairoMakie` (or GLMakie/WGLMakie) to enable this functionality.")
 end
 
-export statebins_plots, statebins_makie, STATE_COORDS
+export statebins, STATE_COORDS
 
 end # module StateBins

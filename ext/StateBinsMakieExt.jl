@@ -12,7 +12,7 @@ using ColorSchemes
 Flexible Makie-based statebins with extensive customization options.
 All visual parameters can be overridden while maintaining sensible defaults.
 """
-function StateBins.statebins_makie(data::DataFrame;
+function StateBins.statebins(data::DataFrame;
     state_col::String="state",
     value_col::String="value",
     title::String="",

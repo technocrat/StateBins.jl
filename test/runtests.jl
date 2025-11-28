@@ -45,7 +45,6 @@ using Aqua
     end
     
     @testset "Helper Functions" begin
-        @test StateBins.calculate_marker_size(12, 0.3, :plots) isa Number
         @test StateBins.calculate_marker_size(12, 0.3, :makie) isa Number
         @test StateBins.calculate_marker_size(12, 0.3, :unknown) isa Number
         
@@ -64,21 +63,18 @@ using Aqua
         )
         
         # Test that functions exist and accept basic parameters
-        @test hasmethod(statebins_plots, (DataFrame,))
-        @test hasmethod(statebins_makie, (DataFrame,))
+        @test hasmethod(statebins, (DataFrame,))
         
         # Test error handling for missing columns
         invalid_data = DataFrame(x = [1, 2, 3], y = [4, 5, 6])
-        @test_throws ErrorException statebins_plots(invalid_data)
-        @test_throws ErrorException statebins_makie(invalid_data)
+        @test_throws ErrorException statebins(invalid_data)
         
         # Test error handling for no matching states
         no_match_data = DataFrame(
             state = ["InvalidState1", "InvalidState2"],
             value = [1, 2]
         )
-        @test_throws ErrorException statebins_plots(no_match_data)
-        @test_throws ErrorException statebins_makie(no_match_data)
+        @test_throws ErrorException statebins(no_match_data)
     end
     
     @testset "Aqua Quality Tests" begin
