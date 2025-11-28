@@ -70,223 +70,23 @@ function should_use_light_text(color)
 end
 
 """
-    statebins_plots(data::DataFrame; state_col="state", value_col="value", title="")
+    statebins_plots(data::DataFrame; kwargs...)
 
-Simple Plots.jl-based statebins with minimal customization options.
-Uses sensible defaults optimized for quick visualization.
-
-# Arguments
-- `data::DataFrame`: Input data with state and value columns
-- `state_col::String="state"`: Name of the state column (accepts state names or abbreviations)
-- `value_col::String="value"`: Name of the value column
-- `title::String=""`: Plot title
-
-# Example
-```julia
-using Plots
-data = DataFrame(state=["California", "Texas", "Florida"], value=[100, 85, 70])
-statebins_plots(data, title="Population (millions)")
-```
+Create a statebins plot using the Plots.jl backend.
+Requires `using Plots` to be loaded.
 """
-function statebins_plots(data::DataFrame;
-    state_col::String="state",
-    value_col::String="value",
-    title::String="")
-    
-    # Validate required columns
-    if !(state_col in names(data)) || !(value_col in names(data))
-        error("Required columns '$state_col' and/or '$value_col' not found")
-    end
-
-    # Determine merge strategy based on column content
-    max_length = maximum(length.(string.(data[!, state_col])))
-    merge_col = max_length <= 3 ? "abbrev" : "state"
-
-    # Merge with coordinates
-    merged_data = innerjoin(STATE_COORDS, data, on=(merge_col => state_col))
-    
-    if nrow(merged_data) == 0
-        error("No valid states found in data")
-    end
-
-    # Extract data
-    values = merged_data[!, value_col]
-    cols = merged_data[!, :col]
-    rows = -merged_data[!, :row]  # Flip y-axis for proper orientation
-
-    # Fixed parameters optimized for readability
-    marker_size = 25
-    font_size = 10
-    colorscheme = :viridis
-
-    # Create base plot
-    p = Main.Plots.scatter(cols, rows,
-        marker=:square,
-        markersize=marker_size,
-        markerstrokecolor="white",
-        markerstrokewidth=2,
-        marker_z=values,
-        color=colorscheme,
-        aspect_ratio=:equal,
-        grid=false,
-        showaxis=false,
-        title=title)
-
-    # Add state abbreviation labels with adaptive text color
-    colormap = ColorSchemes.colorschemes[colorscheme]
-    normalized_values = (values .- minimum(values)) ./ (maximum(values) - minimum(values))
-
-    for i in 1:nrow(merged_data)
-        color_rgb = get(colormap, normalized_values[i])
-        label_color = should_use_light_text(color_rgb) ? "white" : "black"
-        Main.Plots.annotate!(p, cols[i], rows[i],
-            Main.Plots.text(merged_data[i, :abbrev], font_size, :center, label_color))
-    end
-
-    return p
+function statebins_plots(args...; kwargs...)
+    error("The Plots backend is not loaded. Please run `using Plots` to enable this functionality.")
 end
 
 """
     statebins_makie(data::DataFrame; kwargs...)
 
-Flexible Makie-based statebins with extensive customization options.
-All visual parameters can be overridden while maintaining sensible defaults.
-
-# Arguments
-- `data::DataFrame`: Input data with state and value columns
-- `state_col::String="state"`: Name of the state column
-- `value_col::String="value"`: Name of the value column
-- `title::String=""`: Plot title
-- `colorscheme=:viridis`: Color scheme for mapping values
-- `font_size::Int=12`: Font size for state labels
-- `marker_size::Real=35`: Size of state markers (ignored if auto_size=true)
-- `margin_factor::Float64=0.3`: Margin around text as fraction of text size (used with auto_size)
-- `auto_size::Bool=true`: Whether to automatically calculate marker size based on font_size and margin_factor
-- `show_labels::Bool=true`: Whether to show state abbreviations
-- `show_colorbar::Bool=true`: Whether to show the colorbar
-- `border_color="white"`: Color of marker borders
-- `border_width::Real=2`: Width of marker borders
-- `figure_size::Tuple=(800, 600)`: Figure dimensions
-- `hide_decorations::Bool=true`: Whether to hide axis decorations
-- `colorbar_label::String=""`: Label for the colorbar (defaults to value_col)
-- `text_color_threshold::Float64=0.179`: Luminance threshold for text color switching
-
-# Example
-```julia
-using CairoMakie  # or GLMakie, WGLMakie
-data = DataFrame(state=["CA", "TX", "FL"], value=[100, 85, 70])
-statebins_makie(data, 
-    title="Population (millions)",
-    colorscheme=:plasma,
-    font_size=14,
-    margin_factor=0.4)
-```
+Create a statebins plot using a Makie.jl backend.
+Requires a Makie backend (e.g., `using CairoMakie`) to be loaded.
 """
-function statebins_makie(data::DataFrame;
-    state_col::String="state",
-    value_col::String="value",
-    title::String="",
-    colorscheme=:viridis,
-    font_size::Int=12,
-    marker_size::Real=35,
-    margin_factor::Float64=0.3,
-    auto_size::Bool=true,
-    show_labels::Bool=true,
-    show_colorbar::Bool=true,
-    border_color="white",
-    border_width::Real=2,
-    figure_size::Tuple=(800, 600),
-    hide_decorations::Bool=true,
-    colorbar_label::String="",
-    text_color_threshold::Float64=0.179,
-    kwargs...)
-
-    # Determine which Makie backend is loaded
-    makie_module = if isdefined(Main, :GLMakie)
-        Main.GLMakie
-    elseif isdefined(Main, :CairoMakie)
-        Main.CairoMakie
-    elseif isdefined(Main, :WGLMakie)
-        Main.WGLMakie
-    else
-        error("No Makie backend found. Load GLMakie, CairoMakie, or WGLMakie first.")
-    end
-
-    # Validate required columns
-    if !(state_col in names(data)) || !(value_col in names(data))
-        error("Required columns '$state_col' and/or '$value_col' not found")
-    end
-
-    # Determine merge strategy based on column content
-    max_length = maximum(length.(string.(data[!, state_col])))
-    merge_col = max_length <= 3 ? "abbrev" : "state"
-
-    # Merge with coordinates
-    merged_data = innerjoin(STATE_COORDS, data, on=(merge_col => state_col))
-    
-    if nrow(merged_data) == 0
-        error("No valid states found in data")
-    end
-    
-    # Extract plotting data
-    values = merged_data[!, value_col]
-    cols = merged_data[!, :col]
-    rows = -merged_data[!, :row]  # Flip y-axis for proper orientation
-
-    # Create figure and axis
-    fig = makie_module.Figure(size=figure_size; kwargs...)
-    ax = makie_module.Axis(fig[1, 1],
-        title=title,
-        aspect=makie_module.DataAspect())
-
-    if hide_decorations
-        makie_module.hidedecorations!(ax)
-        makie_module.hidespines!(ax)
-    end
-
-    # Create scatter plot
-    scatter_plot = makie_module.scatter!(ax, cols, rows,
-        markersize=marker_size,
-        marker=:rect,
-        color=values,
-        colormap=colorscheme,
-        strokecolor=border_color,
-        strokewidth=border_width)
-
-    # Add colorbar if requested
-    if show_colorbar
-        cb_label = isempty(colorbar_label) ? value_col : colorbar_label
-        makie_module.Colorbar(fig[1, 2], scatter_plot, label=cb_label)
-    end
-
-    # Add state labels with adaptive text color
-    if show_labels
-        colormap_obj = ColorSchemes.colorschemes[colorscheme]
-        normalized_values = (values .- minimum(values)) ./ (maximum(values) - minimum(values))
-
-        for i in 1:nrow(merged_data)
-            color_rgb = get(colormap_obj, normalized_values[i])
-            
-            # Custom threshold for text color decision
-            rgb = convert(Colors.RGB, color_rgb)
-            r, g, b = rgb.r, rgb.g, rgb.b
-            srgb_to_linear = x -> x <= 0.03928 ? x / 12.92 : ((x + 0.055) / 1.055)^2.4
-            r_lin = srgb_to_linear(r)
-            g_lin = srgb_to_linear(g)
-            b_lin = srgb_to_linear(b)
-            luminance = 0.2126 * r_lin + 0.7152 * g_lin + 0.0722 * b_lin
-            
-            label_color = luminance < text_color_threshold ? "white" : "black"
-            
-            makie_module.text!(ax, cols[i], rows[i],
-                text=merged_data[i, :abbrev],
-                align=(:center, :center),
-                fontsize=font_size,
-                color=label_color)
-        end
-    end
-
-    return fig
+function statebins_makie(args...; kwargs...)
+    error("The Makie backend is not loaded. Please run `using CairoMakie` (or GLMakie/WGLMakie) to enable this functionality.")
 end
 
 export statebins_plots, statebins_makie, STATE_COORDS
