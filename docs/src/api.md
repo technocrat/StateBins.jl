@@ -7,11 +7,7 @@ CurrentModule = StateBins
 ## Functions
 
 ```@docs
-statebins_plots
-```
-
-```@docs  
-statebins_makie
+statebins
 ```
 
 ## Data

@@ -1,2 +1,8 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+MaterialDocs = "10bdffc8-969c-4dd4-83f3-742518eccd6b"
+StateBins = "9a95ff34-6502-4c8e-98bc-9434865e63ed"
+
+[compat]
+Documenter = "1"
+MaterialDocs = "0.2"

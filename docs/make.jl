@@ -1,22 +1,27 @@
 using Documenter
-
-# Add the parent directory to the load path to find StateBins
-push!(LOAD_PATH, joinpath(@__DIR__, ".."))
-
+using MaterialDocs
 using StateBins
 
-makedocs(
+makedocs(;
     sitename = "StateBins.jl",
-    format = Documenter.HTML(
-        prettyurls = false,
-        edit_link = nothing
+    authors = "Richard Careaga <public@careaga.net>",
+    modules = [StateBins],
+    format = Material3(;
+        theme = :ocean_depth,
+        dark_mode = :toggle,
+        edit_link = "main",
+        prettyurls = get(ENV, "CI", "false") == "true",
+        canonical = "https://technocrat.github.io/StateBins.jl",
     ),
+    repo = Remotes.GitHub("technocrat", "StateBins.jl"),
     pages = [
         "Home" => "index.md",
-        "API Reference" => "api.md"
+        "API Reference" => "api.md",
     ],
-    modules = [StateBins],
-    clean = true,
-    doctest = false,
-    remotes = nothing
+    checkdocs = :none,
+)
+
+deploydocs(;
+    repo = "github.com/technocrat/StateBins.jl.git",
+    devbranch = "main",
 )

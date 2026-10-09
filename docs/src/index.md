@@ -13,19 +13,19 @@ StateBins provide an alternative to traditional geographic maps by representing 
 ## Quick Example
 
 ```julia
-using StateBins, DataFrames, Plots
+using StateBins, DataFrames, CairoMakie
 
 data = DataFrame(
     state = ["CA", "TX", "FL", "NY", "PA"],
     value = [39.5, 29.7, 22.6, 19.3, 13.0]
 )
 
-statebins_plots(data, title="State Population (millions)")
+statebins(data; title="State Population (millions)")
 ```
 
 ## Features
 
-- Two backend options: Simple Plots.jl interface and full-featured Makie.jl interface
+- Makie.jl backend (load `CairoMakie`, `GLMakie` or `WGLMakie` to enable plotting)
 - Automatic state detection: Works with state names or abbreviations  
 - Adaptive text coloring: State labels automatically adjust for optimal contrast
 - Customizable styling: Full control over colors, sizes, fonts, and layout
